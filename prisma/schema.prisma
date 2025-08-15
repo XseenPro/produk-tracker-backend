@@ -1,0 +1,126 @@
+  // This is your Prisma schema file,
+  // learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+  // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+  // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+  // schema.prisma
+  generator client {
+    provider = "prisma-client-js"
+  }
+
+  datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+  }
+
+  enum Role {
+    pabrik
+    distributor
+    agen
+    reseller
+    pembeli
+  }
+
+  model User {
+    id       String    @id @default(cuid())
+    username String
+    password String
+    email    String    @unique
+    role     Role      @default(reseller)
+    tier     String    @default("bronze")
+    address  String    @default("unknown")
+    telp     String    @default("0")
+    logo      Bytes?
+    createdById  String? 
+    createdBy    User?   @relation("CreatedUsers", fields: [createdById], references: [id]) 
+    createdUsers User[]  @relation("CreatedUsers")
+    products Product[]
+    buyerTransactions  Transaction[] @relation("Buyer")
+    sellerTransactions Transaction[] @relation("Seller")
+    buyerDebts       Debt[]      @relation("BuyerDebts")
+    sellerDebts      Debt[]      @relation("SellerDebts")
+    senderId         notifications[]  @relation("SenderId")
+    receiverId       notifications[]  @relation("ReceiverId")
+  }
+
+  model Product {
+    id            String   @id @default(cuid())
+    name          String   
+    category      String
+    productPrice  Float    @default(0)
+    purchasePrice Float    @default(0)
+    het           Float    @default(0)
+    expiredDate   DateTime?
+    quantity      Int      @default(0)
+    position      String   @default("Tidak Diberikan")
+    createdAt     DateTime @default(now())
+    userId        String   
+    user          User     @relation(fields: [userId], references: [id])
+    transactions  Transaction[]
+    productDebts  Debt[]   @relation("productDebts")
+  }
+
+  model Transaction {
+    id              String   @id @default(cuid())
+    createdAt       DateTime @default(now())      
+    productId       String
+    product         Product  @relation(fields: [productId], references: [id])
+    status          String   @default("sedang dikirim")
+    profit          Float
+    buyerId         String
+    sellerId        String
+    totalPrice      Float
+    quantity        Int
+    buyer           User     @relation("Buyer", fields: [buyerId], references: [id]) 
+    seller          User     @relation("Seller", fields: [sellerId], references: [id])
+  }
+
+  model BlacklistedToken {
+    id        String   @id @default(cuid())
+    token     String   @unique
+    createdAt DateTime @default(now())
+  }
+
+  model Debt {
+    id             String   @id @default(cuid())
+    buyerId        String
+    sellerId       String
+    amount         Float
+    createdAt      DateTime @default(now())
+    isPaid         Boolean  @default(false)
+    productId      String
+    
+    buyer          User     @relation("BuyerDebts", fields: [buyerId], references: [id])
+    seller         User     @relation("SellerDebts", fields: [sellerId], references: [id])
+    product        Product  @relation("productDebts", fields: [productId], references: [id]) 
+    debtHistory    DebtPayment[] @relation("debtHistory")      
+  }
+
+  model DebtPayment {
+    id            String   @id @default(cuid())
+    debtId        String
+    debt          Debt     @relation("debtHistory", fields: [debtId], references: [id])
+    sellerId      String
+    buyerId       String
+    paymentAmount Float
+    paymentNote   String?
+    createdAt     DateTime @default(now())
+  }
+
+  model notifications{
+    id            String   @id @default(cuid())
+    senderId      String
+    receiverId    String
+    type          String
+    timestamp     DateTime @default(now())
+    read_status   Boolean  @default(false)
+    last_updated  DateTime @default(now())
+
+    sender      User    @relation("SenderId", fields: [senderId], references: [id])
+    receiver    User    @relation("ReceiverId", fields: [receiverId], references: [id])
+  }
+
+
+
+

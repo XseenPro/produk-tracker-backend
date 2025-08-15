@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebSocket Client</title>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script>
+      const socket = io("http://localhost:4000");
+
+      socket.on('connect', () => {
+        console.log("Connected to WebSocket server");
+      });
+
+      socket.on("notification", (data) => {
+        console.log("Notifikasi diterima:", data);
+
+        const notificationElement = document.createElement("div");
+        notificationElement.textContent = `Notifikasi baru: ${data.type}`;
+        document.body.appendChild(notificationElement);
+
+        if (data.type && data.receiverId) {
+          console.log("Notifikasi berhasil diterima oleh penerima dengan ID:", data.receiverId);
+        } else {
+          console.error("Notifikasi tidak lengkap atau gagal dikirim.");
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <h1>WebSocket Notification Test</h1>
+    <p>Menunggu notifikasi...</p>
+  </body>
+</html>
