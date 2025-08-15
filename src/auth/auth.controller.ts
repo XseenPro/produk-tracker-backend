@@ -157,7 +157,7 @@ export const updateUser = async (req: Request, res: Response) => {
   let logoBuffer: Buffer | undefined = undefined;
 
   if (logoFile) {
-    logoBuffer = fs.readFileSync(logoFile.path); // baca file sebagai Buffer
+    logoBuffer = logoFile.buffer;
   }
 
   if (!username && !address && !telp && !logoBuffer) {

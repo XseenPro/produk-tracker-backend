@@ -6,7 +6,7 @@ import multer from "multer";
 export const AuthRouter: Router = Router()
 export const Accounts: Router = Router()
 
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ storage: multer.memoryStorage() });
 
 AuthRouter.post('/register', verifyToken, registerUser)
 AuthRouter.post('/login', createSession)
